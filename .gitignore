@@ -12,7 +12,8 @@ bin/
 /lib/
 /logs/
 /modules
-/project/target
+/project/.sbtserver
+/project/.sbtserver.lock
 /target
 tmp/
 test-result
