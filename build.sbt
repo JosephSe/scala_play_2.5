@@ -10,7 +10,11 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   jdbc,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+  filters,
+  "com.typesafe.slick"  %%     "slick-hikaricp"           %      "3.1.1",
+  "com.typesafe.slick"   %%    "slick"            	      %      "3.1.1",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+  "org.mockito" % "mockito-all" % "1.10.19" % Test
 )
 
 fork in run := true

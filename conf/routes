@@ -13,7 +13,7 @@ GET     /message                    controllers.AsyncController.message
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 # An example controller showing how to write asynchronous code
-GET     /dashboard/getCount                    controllers.DashboardController.getAllCount
-GET     /dashboard/getCountNew                    controllers.DashboardController.getAllCountNew
+#GET     /dashboard/getCount                    controllers.DashboardController.getAllCount
+GET     /dashboard/system/entitycount          controllers.DashboardController.getSystemEntityCount
 
-GET     /system/jsessionid                    controllers.DashboardController.getAllCount
+#GET     /system/jsessionid                    controllers.DashboardController.getAllCount
