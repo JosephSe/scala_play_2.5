@@ -1,0 +1,50 @@
+[ {
+  "name" : "Property",
+  "systems" : {
+    "Coherence" : 15150,
+    "ATG" : 11968,
+    "GC" : 11267
+  }
+}, {
+  "name" : "PropertyContract",
+  "systems" : {
+    "Coherence" : 5664,
+    "ATG" : 5914,
+    "GC" : 5870
+  }
+}, {
+  "name" : "RatePlan",
+  "systems" : {
+    "Coherence" : 0,
+    "ATG" : 10281,
+    "GC" : 9859
+  }
+}, {
+  "name" : "Adjustment",
+  "systems" : {
+    "Coherence" : 252,
+    "ATG" : 0,
+    "GC" : 1046
+  }
+}, {
+  "name" : "Markup",
+  "systems" : {
+    "Coherence" : 45560,
+    "ATG" : 0,
+    "GC" : 1292367
+  }
+}, {
+  "name" : "InventoryRestriction",
+  "systems" : {
+    "Coherence" : 1096,
+    "ATG" : 0,
+    "GC" : 20149
+  }
+}, {
+  "name" : "InventoryUsage",
+  "systems" : {
+    "Coherence" : 1343786,
+    "ATG" : 0,
+    "GC" : 4252893
+  }
+} ]

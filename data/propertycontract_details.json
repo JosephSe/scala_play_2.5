@@ -1,0 +1,61 @@
+[ {
+  "category" : "countbystatus",
+  "cohproperties" : {
+    "LIVE" : 3624,
+    "SUSPENDED" : 228,
+    "CANCELLED" : 194,
+    "PENDING" : 1618
+  },
+  "atghproperties" : {
+    "CANCELLED" : 200,
+    "SUSPENDED" : 235,
+    "PENDING" : 1674,
+    "LIVE" : 3804
+  },
+  "gcproperties" : {
+    "PENDING" : 1629,
+    "CANCELLED" : 200,
+    "SUSPENDED" : 233,
+    "LIVE" : 3808
+  }
+}, {
+  "category" : "countbycurrency",
+  "cohproperties" : {
+    "GBP" : 1145,
+    "THB" : 142,
+    "JPY" : 222,
+    "USD" : 1152,
+    "Others" : 915,
+    "EUR" : 2212
+  },
+  "atghproperties" : {
+    "GBP" : 1172,
+    "THB" : 142,
+    "JPY" : 225,
+    "USD" : 1178,
+    "Others" : 798,
+    "EUR" : 2366
+  },
+  "gcproperties" : {
+    "GBP" : 1170,
+    "THB" : 140,
+    "JPY" : 225,
+    "USD" : 1163,
+    "Others" : 792,
+    "EUR" : 2380
+  }
+}, {
+  "category" : "countbymodel",
+  "cohproperties" : {
+    "MARGIN" : 980,
+    "STATIC" : 4684
+  },
+  "atghproperties" : {
+    "STATIC" : 4927,
+    "MARGIN" : 986
+  },
+  "gcproperties" : {
+    "MARGIN" : 966,
+    "STATIC" : 4904
+  }
+} ]
