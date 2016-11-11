@@ -81,7 +81,7 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
     val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
       getSessionId()
     }
-    println("::::::::::::::::: " + sessionId)
+    
     ws.url(conf.getString("coherence.ui.url").get)
       .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
       .withFollowRedirects(true)
@@ -99,7 +99,7 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
     val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
       getSessionId()
     }
-    println("::::::::::::::::: " + sessionId)
+    
     entity match {
       case "PropertyContract" =>
         val statusList = conf.getList("coherence.contStatus").get.unwrapped().toArray.toList
@@ -127,7 +127,6 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
     val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
       getSessionId()
     }
-    println("::::::::::::::::: " + sessionId)
     entity match {
       case "PropertyContract" =>
           val res: Future[List[Property]] = {
@@ -151,7 +150,6 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
     val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
       getSessionId()
     }
-    println("::::::::::::::::: " + sessionId)
     entity match {
       case "PropertyContract" =>
         val res: Future[List[Property]] = {
