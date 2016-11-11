@@ -15,5 +15,6 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # An example controller showing how to write asynchronous code
 
 GET     /system/cache/refresh                   controllers.SystemController.refreshJsonCache
-GET     /system/entity/count                    controllers.SystemController.getEntityCount
+GET     /dashboard/entity/count                 controllers.DashboardController.getEntityCount
+GET     /dashboard/entity/details/:entityName   controllers.DashboardDetailsController.getEntityDetails(entityName: String)
 
