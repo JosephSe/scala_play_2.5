@@ -28,7 +28,8 @@ class  EntityCountPropertyContactAPIServiceImpl @Inject()(coherenceServiceBroker
                                            conf : play.api.Configuration, cache: CacheApi) extends  EntityCountPropertyContactAPIService {
 
   lazy val entities = conf.getList("coherence.entities").get.unwrapped().toArray.toList
-
+  lazy val propertyContractTNameGC = conf.getString("gc.propertycontract")
+  lazy val propertyContractTNameATG = conf.getString("atg.propertycontract")
   //Count by Status
   private def queryCoherenceForPropertyContractStatus(entity: String) : List[Property] = coherenceServiceBroker.executeQueryForPropertyContractStatus(entity)
   private def queryAtgForPropertyContractStatus(entity: Option[String]) : List[Property] = aTGDao.executeAtgQueryForPropertyContractStatus(entity)
@@ -62,24 +63,24 @@ class  EntityCountPropertyContactAPIServiceImpl @Inject()(coherenceServiceBroker
   }
 
   private def loadPropertyContractCntByStatusDetails(): SystemProperties = {
-    val gcProperties: List[Property] = queryGcForPropertyContractStatus(Option("cv_property_contract"))
-    val atgProperties: List[Property] = queryAtgForPropertyContractStatus(Option("fit_contract"))
+    val gcProperties: List[Property] = queryGcForPropertyContractStatus(propertyContractTNameGC)
+    val atgProperties: List[Property] = queryAtgForPropertyContractStatus(propertyContractTNameATG)
     val cohProperties: List[Property] = queryCoherenceForPropertyContractStatus("PropertyContract")
     val sysProps = SystemProperties("countbystatus", cohProperties, atgProperties, gcProperties)
     sysProps
   }
 
   private def loadPropertyContractCntByCurrencyDetails(): SystemProperties = {
-    val gcProperties: List[Property] = queryGcForPropertyContractCurrency(Option("cv_property_contract"))
-    val atgProperties: List[Property] = queryAtgForPropertyContractCurrency(Option("fit_contract"))
+    val gcProperties: List[Property] = queryGcForPropertyContractCurrency(propertyContractTNameGC)
+    val atgProperties: List[Property] = queryAtgForPropertyContractCurrency(propertyContractTNameATG)
     val cohProperties: List[Property] = queryCoherenceForPropertyContractCurrency("PropertyContract")
     val sysProps = SystemProperties("countbycurrency", cohProperties, atgProperties, gcProperties)
     sysProps
   }
 
   private def loadPropertyContractCntByModelDetails(): SystemProperties = {
-    val gcProperties: List[Property] = queryGcForPropertyContractModel(Option("cv_property_contract"))
-    val atgProperties: List[Property] = queryAtgForPropertyContractModel(Option("fit_contract"))
+    val gcProperties: List[Property] = queryGcForPropertyContractModel(propertyContractTNameGC)
+    val atgProperties: List[Property] = queryAtgForPropertyContractModel(propertyContractTNameATG)
     val cohProperties: List[Property] = queryCoherenceForPropertyContractModel("PropertyContract")
     val sysProps = SystemProperties("countbymodel", cohProperties, atgProperties, gcProperties)
     sysProps

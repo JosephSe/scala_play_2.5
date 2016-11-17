@@ -15,7 +15,9 @@ class DashboardController @Inject()(entityCountAPIService: EntityCountAPIService
       val entityListJson = entityCountAPIService.getDashboardCountFromCache()
       Ok(entityListJson)
     } catch {
-      case e : Exception => Ok("No data found to load, Please call the refresh URL to generate the json file")
+      case e : Exception =>
+         e.printStackTrace()
+        Ok("No data found to load, Please call the refresh URL to generate the json file")
     }
   }
 }
