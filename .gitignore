@@ -23,3 +23,5 @@ server.pid
 .cache
 .sbtserver/
 project/project/
+conf/dev.conf
+conf/prod.conf
