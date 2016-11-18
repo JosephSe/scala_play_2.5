@@ -47,6 +47,8 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
 
   import CoherenceQueries._
 
+  val connectionTimeout = 25 seconds
+
   private def getSessionId(): String = {
     var jsessionId: String = ""
     val httpClient: DefaultHttpClient = new DefaultHttpClient()
@@ -119,7 +121,7 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
             }
         }
         val futset: Future[List[Property]] = Future.sequence(res)
-        Await.result(futset.map(lp => lp), 5 seconds)
+        Await.result(futset.map(lp => lp), connectionTimeout)
     }
   }
 
@@ -142,7 +144,7 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
             case e => Future{ List(Property("currency",0))}
             }
           }
-        Await.result(res.map(lp=>lp), 5 seconds)
+        Await.result(res.map(lp=>lp), connectionTimeout)
     }
     }
 
@@ -165,7 +167,7 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
             case e => Future{ List(Property("Model",0))}
           }
         }
-        Await.result(res.map(lp=>lp), 5 seconds)
+        Await.result(res.map(lp=>lp), connectionTimeout)
     }
   }
 
