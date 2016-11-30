@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import play.api.mvc.{Action, Controller}
-import services.{EntityCountPropertyContactAPIService}
+import services.{EntityCountPropertyAPIService, EntityCountPropertyContactAPIService}
 
 /**
   * Created by isugum on 11/10/2016.

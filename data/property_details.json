@@ -1,0 +1,42 @@
+[ {
+  "category" : "countbyproptype",
+  "cohproperties" : { },
+  "atgproperties" : {
+    "HOTEL" : 11873,
+    "APARTMENT" : 98
+  },
+  "gcproperties" : {
+    "HOTEL" : 10892,
+    "APARTMENT" : 387
+  }
+}, {
+  "category" : "countbypropcategory",
+  "cohproperties" : { },
+  "atgproperties" : {
+    "SUPERIOR DELUXE" : 163,
+    "TOURIST CLASS" : 673,
+    "DELUXE" : 1222,
+    "FIRST CLASS" : 2610,
+    "SUPERIOR TOURIST" : 1599,
+    "SUPERIOR FIRST" : 1268
+  },
+  "gcproperties" : {
+    "SUPERIOR DELUXE" : 158,
+    "TOURIST CLASS" : 658,
+    "DELUXE" : 1159,
+    "FIRST CLASS" : 2495,
+    "SUPERIOR TOURIST" : 1503,
+    "SUPERIOR FIRST" : 1221
+  }
+}, {
+  "category" : "countbypropprov",
+  "cohproperties" : { },
+  "atgproperties" : {
+    "SHUTTLE" : 2446,
+    "PARKING" : 8092
+  },
+  "gcproperties" : {
+    "PARKING" : 8106,
+    "SHUTTLE" : 2440
+  }
+} ]
