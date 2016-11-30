@@ -17,7 +17,9 @@ class DashboardController @Inject()(entityCountAPIService: EntityCountAPIService
     } catch {
       case e : Exception =>
          e.printStackTrace()
-        Ok("No data found to load, Please call the refresh URL to generate the json file")
+        entityCountAPIService.getDashboardCount()
+        Ok(entityCountAPIService.getDashboardCountFromCache())
+        //Ok("No data found to load, Please call the refresh URL to generate the json file")
     }
   }
 }
