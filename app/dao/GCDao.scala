@@ -38,15 +38,19 @@ object GCQueries {
 
   //Property Query Details
   def getGcCntByPropertyType(collectionName: String) = s"SELECT type, COUNT(1) AS cnt FROM $collectionName WHERE TYPE IS NOT NULL GROUP BY type"
-  def getGcCntByPropertyCategory(collectionName: String) = s"SELECT pc.code AS category, COUNT(1) AS cnt FROM cv_property p, PROPERTY_CATEGORY " +
+  def getGcCntByPropertyCategory(collectionName: String, propertyTName:String, propCatTName:String) = s"SELECT pc.code AS category, COUNT(1) AS cnt FROM $propertyTName p, $propCatTName " +
     s"pc WHERE p.category_id = pc.id GROUP BY pc.code"
-  def getGcCntByPropertyProvisionQuery(collectionName: String) = s"SELECT pp.provision_type AS type, COUNT(1) AS cnt FROM property p, property_provision pp " +
+  def getGcCntByPropertyProvisionQuery(collectionName: String, propProvTName:String) = s"SELECT pp.provision_type AS type, COUNT(1) AS cnt FROM $collectionName p, $propProvTName pp " +
     s"WHERE p.id = pp.property_id GROUP BY pp.provision_type"
 }
 
 class GCDaoImpl @Inject()(@NamedDatabase("gc") gcDb: Database, @NamedDatabase("rm") rmDb: Database, conf: play.api.Configuration) extends GCDao {
 
   import GCQueries._
+
+  lazy val propertyTNameGC = conf.getString("gc.property").get
+  lazy val propertyCatTNameGC = conf.getString("gc.propertycategory").get
+  lazy val propProvTName = conf.getString("gc.property_provision").get
 
   override def executeQuery(entity: Option[String]): System = entity.get match {
     case mark if (mark.startsWith("mark")) => executeRmQuery(entity)
@@ -125,7 +129,7 @@ class GCDaoImpl @Inject()(@NamedDatabase("gc") gcDb: Database, @NamedDatabase("r
 
   override def executeGcQueryForPropertyCategory(entity: Option[String]): List[Property] = {
     gcDb.withConnection(conn => {
-      val rs = (conn createStatement).executeQuery(getGcCntByPropertyCategory(entity.get))
+      val rs = (conn createStatement).executeQuery(getGcCntByPropertyCategory(entity.get, propertyTNameGC, propertyCatTNameGC))
       
       val countByPropCate = new Iterator[Property] {
         def hasNext = rs.next()
@@ -144,7 +148,7 @@ class GCDaoImpl @Inject()(@NamedDatabase("gc") gcDb: Database, @NamedDatabase("r
 
   override def executeGcQueryForPropertyProvision(entity: Option[String]): List[Property] = {
     gcDb.withConnection(conn => {
-      val rs = (conn createStatement).executeQuery(getGcCntByPropertyProvisionQuery(entity.get))
+      val rs = (conn createStatement).executeQuery(getGcCntByPropertyProvisionQuery(entity.get, propProvTName))
       val countByPropProv = new Iterator[Property] {
         def hasNext = rs.next()
         def next() = Property(rs.getString("type") match {

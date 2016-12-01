@@ -17,49 +17,59 @@ import scala.io.Source
 /**
   * Created by isugum on 11/10/2016.
   */
-@ImplementedBy(classOf[ EntityCountPropertyContactAPIServiceImpl])
+@ImplementedBy(classOf[EntityCountPropertyContactAPIServiceImpl])
 trait EntityCountPropertyContactAPIService {
   def getPropertyContractDetails()
+
   def getPropertyContractDetailsFromCache(): JsValue
 }
 
-class  EntityCountPropertyContactAPIServiceImpl @Inject()(coherenceServiceBroker: CoherenceServiceBroker,
-                                           aTGDao: ATGDao, gcDao : GCDao,
-                                           conf : play.api.Configuration, cache: CacheApi) extends  EntityCountPropertyContactAPIService {
+class EntityCountPropertyContactAPIServiceImpl @Inject()(coherenceServiceBroker: CoherenceServiceBroker,
+                                                         aTGDao: ATGDao, gcDao: GCDao,
+                                                         conf: play.api.Configuration, cache: CacheApi) extends EntityCountPropertyContactAPIService {
 
   lazy val entities = conf.getList("coherence.entities").get.unwrapped().toArray.toList
   lazy val propertyContractTNameGC = conf.getString("gc.propertycontract")
   lazy val propertyContractTNameATG = conf.getString("atg.propertycontract")
+
   //Count by Status
-  private def queryCoherenceForPropertyContractStatus(entity: String) : List[Property] = coherenceServiceBroker.executeQueryForPropertyContractStatus(entity)
-  private def queryAtgForPropertyContractStatus(entity: Option[String]) : List[Property] = aTGDao.executeAtgQueryForPropertyContractStatus(entity)
-  private def queryGcForPropertyContractStatus(entity: Option[String]) : List[Property] = gcDao.executeGcQueryForPropertyContractStatus(entity)
+  private def queryCoherenceForPropertyContractStatus(entity: String): List[Property] = coherenceServiceBroker.executeQueryForPropertyContractStatus(entity)
+
+  private def queryAtgForPropertyContractStatus(entity: Option[String]): List[Property] = aTGDao.executeAtgQueryForPropertyContractStatus(entity)
+
+  private def queryGcForPropertyContractStatus(entity: Option[String]): List[Property] = gcDao.executeGcQueryForPropertyContractStatus(entity)
+
   //Count By Currency
-  private def queryCoherenceForPropertyContractCurrency(entity: String) : List[Property] = coherenceServiceBroker.executeQueryForPropertyContractCurrency(entity)
-  private def queryAtgForPropertyContractCurrency(entity: Option[String]) : List[Property] = aTGDao.executeAtgQueryForPropertyContractCurrency(entity)
-  private def queryGcForPropertyContractCurrency(entity: Option[String]) : List[Property] = gcDao.executeGcQueryForPropertyContractCurrency(entity)
+  private def queryCoherenceForPropertyContractCurrency(entity: String): List[Property] = coherenceServiceBroker.executeQueryForPropertyContractCurrency(entity)
+
+  private def queryAtgForPropertyContractCurrency(entity: Option[String]): List[Property] = aTGDao.executeAtgQueryForPropertyContractCurrency(entity)
+
+  private def queryGcForPropertyContractCurrency(entity: Option[String]): List[Property] = gcDao.executeGcQueryForPropertyContractCurrency(entity)
+
   //Count By Model
-  private def queryCoherenceForPropertyContractModel(entity: String) : List[Property] = coherenceServiceBroker.executeQueryForPropertyContractModel(entity)
-  private def queryAtgForPropertyContractModel(entity: Option[String]) : List[Property] = aTGDao.executeAtgQueryForPropertyContractModel(entity)
-  private def queryGcForPropertyContractModel(entity: Option[String]) : List[Property] = gcDao.executeGcQueryForPropertyContractModel(entity)
+  private def queryCoherenceForPropertyContractModel(entity: String): List[Property] = coherenceServiceBroker.executeQueryForPropertyContractModel(entity)
+
+  private def queryAtgForPropertyContractModel(entity: Option[String]): List[Property] = aTGDao.executeAtgQueryForPropertyContractModel(entity)
+
+  private def queryGcForPropertyContractModel(entity: Option[String]): List[Property] = gcDao.executeGcQueryForPropertyContractModel(entity)
 
   override def getPropertyContractDetails() = {
     try {
       val sysProperties: List[SystemProperties] = List(loadPropertyContractCntByStatusDetails(), loadPropertyContractCntByCurrencyDetails(), loadPropertyContractCntByModelDetails())
       println("::::::::::: " + sysProperties)
-      val json = Json.toJson(sysProperties.map(sysProps =>(SystemEntityDetailsJsonFormat(sysProps.category,
-          sysProps.cohproperties.map { sys => (sys.name, sys.count) } toMap,
-          sysProps.atgproperties.map { sys => (sys.name, sys.count) } toMap,
-          sysProps.gcproperties.map { sys => (sys.name, sys.count) } toMap))))
+      val json = Json.toJson(sysProperties.map(sysProps => (SystemEntityDetailsJsonFormat(sysProps.category,
+        sysProps.cohproperties.map { sys => (sys.name, sys.count) } toMap,
+        sysProps.atgproperties.map { sys => (sys.name, sys.count) } toMap,
+        sysProps.gcproperties.map { sys => (sys.name, sys.count) } toMap))))
       val filedir = new File(conf.getString("json.filedir").get)
-          filedir.mkdir()
+      filedir.mkdir()
       val jsonWriter = new PrintWriter(conf.getString("json.propcontpath").get)
-          jsonWriter.write(Json.prettyPrint(json))
-          jsonWriter.close()
+      jsonWriter.write(Json.prettyPrint(json))
+      jsonWriter.close()
       cache.remove("property.contract.details")
-      } catch {
-        case e: Exception => println("*********" + e.getMessage)
-      }
+    } catch {
+      case e: Exception => println("*********" + e.getMessage)
+    }
   }
 
   private def loadPropertyContractCntByStatusDetails(): SystemProperties = {

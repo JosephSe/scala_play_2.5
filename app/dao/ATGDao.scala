@@ -40,15 +40,19 @@ object ATGQueries {
   //Property Entity Queries
   def getAtgCntByPropertyTypeQuery(collectionName: String) = s"SELECT PROPERTY_TYPE AS type, COUNT(1) AS cnt FROM $collectionName " +
     s"WHERE PROPERTY_TYPE IS NOT NULL GROUP BY PROPERTY_TYPE"
-  def getAtgCntByPropertyCategoryQuery(collectionName: String) = s"SELECT fpc.description AS category, COUNT(1) AS cnt FROM $collectionName fph, " +
-    s"fit_property_category fpc WHERE fph.prop_cat_id = fpc.prop_cat_id GROUP BY fpc.description"
-  def getAtgCntByPropertyProvisionQuery(collectionName: String) = s"SELECT fp.provision_type AS type, COUNT(1) AS cnt FROM fit_provision fp, " +
-    s"fit_property_provisions fpp, $collectionName fph WHERE fp.provision_id = fpp.provision_id AND fpp.product_id = fph.product_id GROUP BY fp.provision_type"
+  def getAtgCntByPropertyCategoryQuery(collectionName: String, propCatTName:String) = s"SELECT fpc.description AS category, COUNT(1) AS cnt FROM $collectionName fph, " +
+    s"$propCatTName fpc WHERE fph.prop_cat_id = fpc.prop_cat_id GROUP BY fpc.description"
+  def getAtgCntByPropertyProvisionQuery(collectionName: String, provisionTName:String, propProvTName:String) = s"SELECT fp.provision_type AS type, COUNT(1) AS cnt FROM $provisionTName fp, " +
+    s"$propProvTName fpp, $collectionName fph WHERE fp.provision_id = fpp.provision_id AND fpp.product_id = fph.product_id GROUP BY fp.provision_type"
 }
 
 class ATGDaoImpl @Inject()(conf: play.api.Configuration, db: Database) extends ATGDao {
 
   import ATGQueries._
+
+  lazy val propCatTName = conf.getString("atg.propertycategory").get
+  lazy val provisionTName = conf.getString("atg.provision").get
+  lazy val propProvTName = conf.getString("atg.property_provision").get
 
   override def executeQuery(entity: Option[String]): System = entity match {
     case None => System(conf.getString("system.atg").get, 0)
@@ -122,7 +126,7 @@ class ATGDaoImpl @Inject()(conf: play.api.Configuration, db: Database) extends A
 
   override def executeAtgQueryForPropertyCategory(entity: Option[String]): List[Property] = {
     db.withConnection(conn => {
-      val rs = (conn createStatement).executeQuery(getAtgCntByPropertyCategoryQuery(entity.get))
+      val rs = (conn createStatement).executeQuery(getAtgCntByPropertyCategoryQuery(entity.get, propCatTName))
       val countByPropCate = new Iterator[Property] {
         def hasNext = rs.next()
 
@@ -141,7 +145,7 @@ class ATGDaoImpl @Inject()(conf: play.api.Configuration, db: Database) extends A
 
   override def executeAtgQueryForPropertyProvision(entity: Option[String]): List[Property] = {
     db.withConnection(conn => {
-      val rs = (conn createStatement).executeQuery(getAtgCntByPropertyProvisionQuery(entity.get))
+      val rs = (conn createStatement).executeQuery(getAtgCntByPropertyProvisionQuery(entity.get, provisionTName, propProvTName))
       val countByPropProv = new Iterator[Property] {
         def hasNext = rs.next()
 
