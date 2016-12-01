@@ -52,7 +52,7 @@ class ATGDaoImpl @Inject()(conf: play.api.Configuration, db: Database) extends A
 
   lazy val propCatTName = conf.getString("atg.propertycategory").get
   lazy val provisionTName = conf.getString("atg.provision").get
-  lazy val propProvTName = conf.getString("atg.property_provision").get
+  lazy val propProvTName = conf.getString("atg.propertyprovision").get
 
   override def executeQuery(entity: Option[String]): System = entity match {
     case None => System(conf.getString("system.atg").get, 0)

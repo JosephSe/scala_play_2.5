@@ -36,7 +36,15 @@ trait CoherenceServiceBroker {
 }
 
 object CoherenceQueries {
-  def getCohCountQuery(collectionName: String) = s"select count() from $collectionName"
+  def getCohCountQuery(collectionName: String) = collectionName match {
+    case "RatePlan" => getCohCountQryForRatePlan()
+    case "RoomRate" => getCohCountQryForRoomRate()
+    case _ => getCohCountQry(collectionName)
+  }
+  def getCohCountQryForRatePlan() = s"select sum(value().ratePlans.value().size()) from PropertyContract"
+  def getCohCountQryForRoomRate() = s"select sum(value().roomRates.value().size()) from RateRule"
+  def getCohCountQry(collectionName: String) = s"select count() from $collectionName"
+
   def getCohCntByStatusQuery(collectionName: String, status: String) = s"SELECT COUNT() FROM $collectionName WHERE value().contractStatus like '$status'"
   def getCohCntByCurrencyQuery(collectionName: String) = s"SELECT value().currency, COUNT() FROM $collectionName WHERE  value().currency IS NOT NULL GROUP BY value().currency"
   def getCohCntByModelQuery(collectionName: String) = s"SELECT value().contractModel, COUNT() FROM $collectionName  GROUP BY value().contractModel"

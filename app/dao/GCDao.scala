@@ -50,7 +50,7 @@ class GCDaoImpl @Inject()(@NamedDatabase("gc") gcDb: Database, @NamedDatabase("r
 
   lazy val propertyTNameGC = conf.getString("gc.property").get
   lazy val propertyCatTNameGC = conf.getString("gc.propertycategory").get
-  lazy val propProvTName = conf.getString("gc.property_provision").get
+  lazy val propProvTName = conf.getString("gc.propertyprovision").get
 
   override def executeQuery(entity: Option[String]): System = entity.get match {
     case mark if (mark.startsWith("mark")) => executeRmQuery(entity)
