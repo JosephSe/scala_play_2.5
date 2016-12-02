@@ -22,8 +22,7 @@ trait EntityCountPropertyAPIService {
   def getPropertyDetailsFromCache(): JsValue
 }
 
-class  EntityCountPropertyAPIServiceImpl @Inject()(coherenceServiceBroker: CoherenceServiceBroker,
-                                           aTGDao: ATGDao, gcDao : GCDao,
+class  EntityCountPropertyAPIServiceImpl @Inject()(aTGDao: ATGDao, gcDao : GCDao,
                                            conf : play.api.Configuration, cache: CacheApi) extends  EntityCountPropertyAPIService {
   lazy val propertyTNameGC = conf.getString("gc.property")
   lazy val propertyTNameATG = conf.getString("atg.property")

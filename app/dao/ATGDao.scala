@@ -22,6 +22,10 @@ trait ATGDao {
   def executeAtgQueryForPropertyType(query: Option[String]): List[Property]
   def executeAtgQueryForPropertyCategory(query: Option[String]): List[Property]
   def executeAtgQueryForPropertyProvision(query: Option[String]): List[Property]
+
+  def executeAtgQueryForOfferCode(query: Option[String]): List[Property]
+  def executeAtgQueryForOfferStatus(query: Option[String]): List[Property]
+  def executeAtgQueryForOfferStayType(query: Option[String]): List[Property]
 }
 
 object ATGQueries {
@@ -44,6 +48,10 @@ object ATGQueries {
     s"$propCatTName fpc WHERE fph.prop_cat_id = fpc.prop_cat_id GROUP BY fpc.description"
   def getAtgCntByPropertyProvisionQuery(collectionName: String, provisionTName:String, propProvTName:String) = s"SELECT fp.provision_type AS type, COUNT(1) AS cnt FROM $provisionTName fp, " +
     s"$propProvTName fpp, $collectionName fph WHERE fp.provision_id = fpp.provision_id AND fpp.product_id = fph.product_id GROUP BY fp.provision_type"
+//Offer Entity Queries
+  def getAtgCntByOfferCodeQuery(collectionName: String) = s"SELECT offer_code AS type, COUNT(1) AS cnt FROM $collectionName GROUP BY offer_code"
+  def getAtgCntByOfferStatusQuery(collectionName: String) = s"SELECT offer_active AS active, COUNT(1) AS cnt FROM $collectionName GROUP BY offer_active"
+  def getAtgCntByOfferStayTypeQuery(collectionName: String) = s"SELECT stay_type AS stayType, COUNT(1) AS cnt FROM $collectionName GROUP BY stay_type"
 }
 
 class ATGDaoImpl @Inject()(conf: play.api.Configuration, db: Database) extends ATGDao {
@@ -155,6 +163,52 @@ class ATGDaoImpl @Inject()(conf: play.api.Configuration, db: Database) extends A
         }, rs.getInt("cnt"))
       }.toStream
       countByPropProv.toList
+    })
+  }
+
+  override def executeAtgQueryForOfferCode(entity: Option[String]): List[Property] = {
+    db.withConnection(conn => {
+      val rs = (conn createStatement).executeQuery(getAtgCntByOfferCodeQuery(entity.get))
+      val countByOfferCode = new Iterator[Property] {
+        def hasNext = rs.next()
+        def next() = Property(rs.getString("type") match {
+          case "260" => "EARLY_BIRD"
+          case "261" => "LAST_MINUTE"
+          case "262" => "FREE_NIGHT"
+          case "263" => "MIN_NIGHTS"
+        }, rs.getInt("cnt"))
+      }.toStream
+      countByOfferCode.toList
+    })
+  }
+
+  override def executeAtgQueryForOfferStatus(entity: Option[String]): List[Property] = {
+    db.withConnection(conn => {
+      val rs = (conn createStatement).executeQuery(getAtgCntByOfferStatusQuery(entity.get))
+      val countByOfferStatus = new Iterator[Property] {
+        def hasNext = rs.next()
+
+        def next() = Property(rs.getString("active") match {
+          case "1" => "ACTIVE"
+          case "0" => "INACTIVE"
+        }, rs.getInt("cnt"))
+      }.toStream
+      countByOfferStatus.toList
+    })
+  }
+
+  override def executeAtgQueryForOfferStayType(entity: Option[String]): List[Property] = {
+    db.withConnection(conn => {
+      val rs = (conn createStatement).executeQuery(getAtgCntByOfferStayTypeQuery(entity.get))
+      val countByStayType = new Iterator[Property] {
+        def hasNext = rs.next()
+
+        def next() = Property(rs.getString("stayType") match {
+          case "270" => "INCLUSIVE"
+          case "271" => "ARRIVAL_DAY"
+        }, rs.getInt("cnt"))
+      }.toStream
+      countByStayType.toList
     })
   }
 }

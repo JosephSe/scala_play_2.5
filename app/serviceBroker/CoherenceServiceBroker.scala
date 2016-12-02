@@ -33,6 +33,10 @@ trait CoherenceServiceBroker {
   def executeQueryForPropertyContractStatus(query: String) : List[Property]
   def executeQueryForPropertyContractCurrency(query: String) : List[Property]
   def executeQueryForPropertyContractModel(query: String) : List[Property]
+
+  def executeQueryForOfferCode(query: String) : List[Property]
+  def executeQueryForOfferStatus(query: String) : List[Property]
+  def executeQueryForOfferStayType(query: String) : List[Property]
 }
 
 object CoherenceQueries {
@@ -41,13 +45,25 @@ object CoherenceQueries {
     case "RoomRate" => getCohCountQryForRoomRate()
     case _ => getCohCountQry(collectionName)
   }
+
   def getCohCountQryForRatePlan() = s"select sum(value().ratePlans.value().size()) from PropertyContract"
+
   def getCohCountQryForRoomRate() = s"select sum(value().roomRates.value().size()) from RateRule"
+
   def getCohCountQry(collectionName: String) = s"select count() from $collectionName"
 
   def getCohCntByStatusQuery(collectionName: String, status: String) = s"SELECT COUNT() FROM $collectionName WHERE value().contractStatus like '$status'"
+
   def getCohCntByCurrencyQuery(collectionName: String) = s"SELECT value().currency, COUNT() FROM $collectionName WHERE  value().currency IS NOT NULL GROUP BY value().currency"
+
   def getCohCntByModelQuery(collectionName: String) = s"SELECT value().contractModel, COUNT() FROM $collectionName  GROUP BY value().contractModel"
+
+  // Offer Related Queries
+  def getCohCntByOfferCodeQuery(collectionName: String) = s"SELECT type, COUNT() FROM $collectionName  GROUP BY type"
+
+  def getCohCntByOfferStatusQuery(collectionName: String) = s"SELECT active, COUNT() FROM $collectionName  GROUP BY active"
+
+  def getCohCntByOfferStayTypeQuery(collectionName: String) = s"SELECT stayType, COUNT() FROM $collectionName  GROUP BY stayType"
 }
 
 //noinspection ScalaDeprecation
@@ -110,58 +126,50 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
       getSessionId()
     }
     
-    entity match {
-      case "PropertyContract" =>
-        val statusList = conf.getList("coherence.contStatus").get.unwrapped().toArray.toList
-
-        val res : List[Future[Property]] = statusList.map { s =>
-            ws.url(conf.getString("coherence.ui.url").get)
-              .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
-              .withFollowRedirects(true)
-              .post(Map("cohql" -> Seq(getCohCntByStatusQuery(entity, s.toString))))
-              .map {
-                response => { Property(s.toString, (response.json \ "result").as[Long])
-                }
-              }.recoverWith {
-              case e => Future {
-                Property(s.toString, 0)
-              }
+    val statusList = conf.getList("coherence.contStatus").get.unwrapped().toArray.toList
+    val res : List[Future[Property]] = statusList.map { s =>
+        ws.url(conf.getString("coherence.ui.url").get)
+          .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
+          .withFollowRedirects(true)
+          .post(Map("cohql" -> Seq(getCohCntByStatusQuery(entity, s.toString))))
+          .map {
+            response => { Property(s.toString, (response.json \ "result").as[Long])
             }
+          }.recoverWith {
+          case e => Future {
+            Property(s.toString, 0)
+          }
         }
-        val futset: Future[List[Property]] = Future.sequence(res)
-        Await.result(futset.map(lp => lp), connectionTimeout)
     }
-  }
+      val futset: Future[List[Property]] = Future.sequence(res)
+      Await.result(futset.map(lp => lp), connectionTimeout)
+    }
 
   override def executeQueryForPropertyContractCurrency(entity: String): List[Property] = {
     val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
       getSessionId()
     }
-    entity match {
-      case "PropertyContract" =>
-          val res: Future[List[Property]] = {
-          ws.url(conf.getString("coherence.ui.url").get)
-            .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
-            .withFollowRedirects(true)
-            .post(Map("cohql" -> Seq(getCohCntByCurrencyQuery(entity))))
-            .map {
-              response => {
-                processCountByCurrencyResp(response)
-               }
-            }.recoverWith {
-            case e => Future{ List(Property("currency",0))}
-            }
-          }
-        Await.result(res.map(lp=>lp), connectionTimeout)
+    val res: Future[List[Property]] = {
+    ws.url(conf.getString("coherence.ui.url").get)
+      .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
+      .withFollowRedirects(true)
+      .post(Map("cohql" -> Seq(getCohCntByCurrencyQuery(entity))))
+      .map {
+        response => {
+          processCountByCurrencyResp(response)
+         }
+      }.recoverWith {
+      case e => Future{ List(Property("currency",0))}
+      }
     }
-    }
+    Await.result(res.map(lp=>lp), connectionTimeout)
+  }
+
 
   override def executeQueryForPropertyContractModel(entity: String): List[Property] = {
     val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
       getSessionId()
     }
-    entity match {
-      case "PropertyContract" =>
         val res: Future[List[Property]] = {
           ws.url(conf.getString("coherence.ui.url").get)
             .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
@@ -169,7 +177,7 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
             .post(Map("cohql" -> Seq(getCohCntByModelQuery(entity))))
             .map {
               response => {
-                processCountByModelResp(response)
+            processResp(response)
               }
             }.recoverWith {
             case e => Future{ List(Property("Model",0))}
@@ -177,7 +185,66 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
         }
         Await.result(res.map(lp=>lp), connectionTimeout)
     }
+  override def executeQueryForOfferCode(entity: String): List[Property] = {
+    val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
+      getSessionId()
+    }
+    val res: Future[List[Property]] = {
+      ws.url(conf.getString("coherence.ui.url").get)
+        .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
+        .withFollowRedirects(true)
+        .post(Map("cohql" -> Seq(getCohCntByOfferCodeQuery(entity))))
+        .map {
+          response => {
+            processResp(response)
+          }
+        }.recoverWith {
+        case e => Future{ List(Property("type",0))}
+      }
+    }
+      Await.result(res.map(lp=>lp), connectionTimeout)
+    }
+
+  override def executeQueryForOfferStatus(entity: String): List[Property] = {
+    val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
+      getSessionId()
+    }
+    val res: Future[List[Property]] = {
+      ws.url(conf.getString("coherence.ui.url").get)
+        .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
+        .withFollowRedirects(true)
+        .post(Map("cohql" -> Seq(getCohCntByOfferStatusQuery(entity))))
+        .map {
+          response => {
+            processResp(response)
+          }
+        }.recoverWith {
+        case e => Future{ List(Property("active",0))}
+      }
+    }
+      Await.result(res.map(lp=>lp), connectionTimeout)
   }
+
+  override def executeQueryForOfferStayType(entity: String): List[Property] = {
+    val sessionId = cache.getOrElse[String]("jsessionId", Duration.create(conf.getInt("jsessionId.timeout").get, TimeUnit.MINUTES)) {
+      getSessionId()
+    }
+    val res: Future[List[Property]] = {
+      ws.url(conf.getString("coherence.ui.url").get)
+        .withHeaders("Cookie" -> sessionId, "Accept" -> "application/json", "Content-Type" -> "application/x-www-form-urlencoded")
+        .withFollowRedirects(true)
+        .post(Map("cohql" -> Seq(getCohCntByOfferStayTypeQuery(entity))))
+        .map {
+          response => {
+            processResp(response)
+          }
+        }.recoverWith {
+        case e => Future{ List(Property("stayType",0))}
+      }
+    }
+      Await.result(res.map(lp=>lp), connectionTimeout)
+  }
+
 
   private def processCountByCurrencyResp(response: WSResponse): List[Property] = {
       var buffer = new ListBuffer[Property]
@@ -199,7 +266,7 @@ class CoherenceServiceBrokerImpl @Inject()(ws: WSClient, conf: play.api.Configur
       buffer.toList
     }
 
-  private def processCountByModelResp(response: WSResponse): List[Property] = {
+  private def processResp(response: WSResponse): List[Property] = {
     var buffer = new ListBuffer[Property]
     val keys = response.json.as[JsArray]
     val map = {

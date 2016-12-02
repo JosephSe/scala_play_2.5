@@ -21,6 +21,10 @@ trait GCDao {
   def executeGcQueryForPropertyCategory(query: Option[String]): List[Property]
   def executeGcQueryForPropertyProvision(query: Option[String]): List[Property]
 
+  def executeGcQueryForOfferCode(query: Option[String]): List[Property]
+  def executeGcQueryForOfferStatus(query: Option[String]): List[Property]
+  def executeGcQueryForOfferStayType(query: Option[String]): List[Property]
+
 }
 
 object GCQueries {
@@ -42,6 +46,10 @@ object GCQueries {
     s"pc WHERE p.category_id = pc.id GROUP BY pc.code"
   def getGcCntByPropertyProvisionQuery(collectionName: String, propProvTName:String) = s"SELECT pp.provision_type AS type, COUNT(1) AS cnt FROM $collectionName p, $propProvTName pp " +
     s"WHERE p.id = pp.property_id GROUP BY pp.provision_type"
+  //Offer Entity Queries
+  def getGcCntByOfferCodeQuery(collectionName: String) = s"SELECT type, COUNT(1) AS cnt FROM $collectionName GROUP BY type"
+  def getGcCntByOfferStatusQuery(collectionName: String) = s"SELECT active, COUNT(1) AS cnt FROM $collectionName GROUP BY active"
+  def getGcCntByOfferStayTypeQuery(collectionName: String) = s"SELECT stay_type AS stayType, COUNT(1) AS cnt FROM $collectionName GROUP BY stay_type"
 }
 
 class GCDaoImpl @Inject()(@NamedDatabase("gc") gcDb: Database, @NamedDatabase("rm") rmDb: Database, conf: play.api.Configuration) extends GCDao {
@@ -157,6 +165,53 @@ class GCDaoImpl @Inject()(@NamedDatabase("gc") gcDb: Database, @NamedDatabase("r
         }, rs.getInt("cnt"))
       }.toStream
       countByPropProv.toList
+    })
+  }
+
+  override def executeGcQueryForOfferCode(entity: Option[String]): List[Property] = {
+    gcDb.withConnection(conn => {
+      val rs = (conn createStatement).executeQuery(getGcCntByOfferCodeQuery(entity.get))
+
+      val countByOfferCode = new Iterator[Property] {
+        def hasNext = rs.next()
+        def next() = Property(rs.getString("type") match {
+          case "EB" => "EARLY_BIRD"
+          case "LM" => "LAST_MINUTE"
+          case "FN" => "FREE_NIGHT"
+          case "MN" => "MIN_NIGHTS"
+        }, rs.getInt("cnt"))
+      }.toStream
+      countByOfferCode.toList
+    })
+  }
+
+  override def executeGcQueryForOfferStatus(entity: Option[String]): List[Property] = {
+    gcDb.withConnection(conn => {
+      val rs = (conn createStatement).executeQuery(getGcCntByOfferStatusQuery(entity.get))
+      val countByOfferStatus = new Iterator[Property] {
+        def hasNext = rs.next()
+
+        def next() = Property(rs.getString("active") match {
+          case "1" => "ACTIVE"
+          case "0" => "INACTIVE"
+        }, rs.getInt("cnt"))
+      }.toStream
+      countByOfferStatus.toList
+    })
+  }
+
+  override def executeGcQueryForOfferStayType(entity: Option[String]): List[Property] = {
+    gcDb.withConnection(conn => {
+      val rs = (conn createStatement).executeQuery(getGcCntByOfferStayTypeQuery(entity.get))
+      val countByStayType = new Iterator[Property] {
+        def hasNext = rs.next()
+
+        def next() = Property(rs.getString("stayType") match {
+          case "I" => "INCLUSIVE"
+          case "A" => "ARRIVAL_DAY"
+        }, rs.getInt("cnt"))
+      }.toStream
+      countByStayType.toList
     })
   }
 
